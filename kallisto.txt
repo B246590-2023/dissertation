@@ -1,0 +1,41 @@
+#!/bin/bash
+
+#$ -N Kalliquant
+
+#$ -cwd
+
+#$ -l h_rt=2:00:00
+
+#$ -l h_vmem=4G
+
+#$ -o $HOME/logs/
+
+#$ -e $HOME/logs/
+
+#$ -pe sharedmem 2
+
+#$ -M s_number@ed.ac.uk -m bea
+
+#$ -V
+
+#$ -t 1-32 
+
+RUN_PATH=/home/s_number
+
+RUN_PATH2=/exports/eddie/scratch/s_number
+vCPU=2
+
+
+ls -1 $RUN_PATH2/ka_try/*_R1_paired.fastq.gz > array.list
+
+infile=$(awk "NR==$SGE_TASK_ID" array.list)
+
+
+
+echo "Selected input file: ${infile}"
+NAME=$(basename ${infile} _R1_paired.fastq.gz)
+
+mkdir -p ${RUN_PATH2}/kallisto/${NAME}
+
+
+kallisto quant --bias -t ${vCPU} -i ${RUN_PATH}/oar_rambv2.0.idx -o ${RUN_PATH2}/kallisto/${NAME} <(zcat ${infile}) <(zcat ${infile/_R1_paired.fastq.gz/_R2_paired.fastq.gz})
